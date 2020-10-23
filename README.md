@@ -1,7 +1,7 @@
 An Automation tool for Recon which will gather all the subdomains using subfinder, Assetfinder & gather all URL's using Gau or waybackurls and using gftool for separating urls for different attacks in different files.
 Working on more tools to add :)
 
-Tools used - You must need to install these tools to use this script
+Tools used - 
 
     SubFinder
     Sublist3r
