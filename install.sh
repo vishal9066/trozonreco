@@ -9,7 +9,7 @@ mkdir ~/tools;
 pip3 install requests;
 chmod +x trozonreco;
 chmod +x trozonreco.sh;
-mv trozoreco /usr/local/bin;
+mv trozonreco /usr/local/bin;
 #tools
 cd ~/tools;
 go get -u github.com/tomnomnom/assetfinder;
