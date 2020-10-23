@@ -1,26 +1,27 @@
 #!/bin/bash
 sudo apt-get install python3-pip;
+python3 -m pip install --upgrade pip;
 sudo apt-get install ruby;
 sudo apt-get install screen;
 sudo apt-get install git;
 mkdir ~/wordlist;
 mkdir ~/tools;
 pip3 install requests;
-chmod +x trozoreco
-chmod +x trozoreco.sh
-mv trozoreco /usr/local/bin
+chmod +x trozonreco;
+chmod +x trozonreco.sh;
+mv trozoreco /usr/local/bin;
 #tools
-cd ~/tools
+cd ~/tools;
 go get -u github.com/tomnomnom/assetfinder;
 go get github.com/tomnomnom/hacks/waybackurls;
-go get github.com/hakluke/hakrawler
+go get github.com/hakluke/hakrawler;
 GO111MODULE=on go get -u -v github.com/lc/gau;
 go get -u github.com/tomnomnom/gf;
 git clone https://github.com/1ndianl33t/Gf-Patterns;
-mv ~/Gf-Patterns/*.json ~/.gf;
-rm -rf ~/Gf-Patterns;
+mv ./Gf-Patterns/*.json ~/.gf;
+rm -rf ./Gf-Patterns;
 wget https://raw.githubusercontent.com/devanshbatham/ParamSpider/master/gf_profiles/potential.json;
-mv ~/potential.json ~/.gf;
+mv ./potential.json ~/.gf;
 GO111MODULE=on go get -u -v github.com/projectdiscovery/httpx/cmd/httpx;
 go get github.com/ffuf/ffuf;
 go get github.com/haccer/subjack;
@@ -33,13 +34,13 @@ git clone https://github.com/projectdiscovery/nuclei.git; cd nuclei/cmd/nuclei/;
 git clone https://github.com/tillson/git-hound ~/Tools/git-hound; cd /root/Tools/git-hound; go build; mv git-hound /root/go/bin/; cd ~;
 git clone https://github.com/projectdiscovery/nuclei-templates $dir/nuclei-templates;
 git clone https://github.com/aboul3la/Sublist3r.git;
-cd ~/tools/Sublist3r/
+cd ~/tools/Sublist3r/;
 sudo pip install -r requirements.txt;
-cd ~/tools/
+cd ~/tools/;
 git clone https://github.com/maurosoria/dirsearch.git;
-cd dirsearch
-chmod +x dirsearch.py
-cd ~/tools/
+cd dirsearch;
+chmod +x dirsearch.py;
+cd ~/tools/;
 sudo apt install nodejs;
 npm install broken-link-checker -g;
 
@@ -56,6 +57,6 @@ alias gf=~/go/bin/gf
 alias waybackurls=~/go/bin/waybackurls
 alias gau=~/go/bin/gau
 alias nuclei=~/go/bin/nuclei
-" >> ~/.bash_rc
+" >> ~/.bash_rc;
 
 
