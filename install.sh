@@ -4,6 +4,7 @@ python3 -m pip install --upgrade pip;
 sudo apt-get install ruby;
 sudo apt-get install screen;
 sudo apt-get install git;
+mkdir ~/Tools;
 mkdir ~/wordlist;
 mkdir ~/tools;
 pip3 install requests;
@@ -17,6 +18,7 @@ go get github.com/tomnomnom/hacks/waybackurls;
 go get github.com/hakluke/hakrawler;
 GO111MODULE=on go get -u -v github.com/lc/gau;
 go get -u github.com/tomnomnom/gf;
+mkdir ~/.gf;
 git clone https://github.com/1ndianl33t/Gf-Patterns;
 mv ./Gf-Patterns/*.json ~/.gf;
 rm -rf ./Gf-Patterns;
@@ -25,14 +27,14 @@ mv ./potential.json ~/.gf;
 GO111MODULE=on go get -u -v github.com/projectdiscovery/httpx/cmd/httpx;
 go get github.com/ffuf/ffuf;
 go get github.com/haccer/subjack;
-wget https://github.com/haccer/subjack/blob/master/fingerprints.json -o ~/tools/
-GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/cmd/subfinder;
+wget https://github.com/haccer/subjack/blob/master/fingerprints.json -o ~/tools/fingerprints.json
+GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder;
 GO111MODULE=on go get -u -v github.com/hahwul/dalfox;
 wget https://raw.githubusercontent.com/Mad-robot/recon-tools/master/dicc.txt -o ~/wordlist/dicc.txt;
 
-git clone https://github.com/projectdiscovery/nuclei.git; cd nuclei/cmd/nuclei/; go build; mv nuclei ~/go/bin/; cd ~;
+GO111MODULE=on go get -u -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei
 git clone https://github.com/tillson/git-hound ~/Tools/git-hound; cd /root/Tools/git-hound; go build; mv git-hound /root/go/bin/; cd ~;
-git clone https://github.com/projectdiscovery/nuclei-templates $dir/nuclei-templates;
+git clone https://github.com/projectdiscovery/nuclei-templates ~/Tools/nuclei-templates;
 git clone https://github.com/aboul3la/Sublist3r.git;
 cd ~/tools/Sublist3r/;
 sudo pip install -r requirements.txt;
@@ -41,7 +43,8 @@ git clone https://github.com/maurosoria/dirsearch.git;
 cd dirsearch;
 chmod +x dirsearch.py;
 cd ~/tools/;
-sudo apt install nodejs;
+sudo apt install nodejs -y;
+apt install npm
 npm install broken-link-checker -g;
 
 go build .;
