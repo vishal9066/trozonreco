@@ -35,7 +35,7 @@ wget https://raw.githubusercontent.com/Mad-robot/recon-tools/master/dicc.txt -o 
 GO111MODULE=on go get -u -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei
 git clone https://github.com/tillson/git-hound ~/Tools/git-hound; cd /root/Tools/git-hound; go build; mv git-hound /root/go/bin/; cd ~;
 git clone https://github.com/projectdiscovery/nuclei-templates ~/Tools/nuclei-templates;
-git clone https://github.com/aboul3la/Sublist3r.git;
+git clone https://github.com/aboul3la/Sublist3r.git ~/tools/;;
 cd ~/tools/Sublist3r/;
 sudo pip install -r requirements.txt;
 cd ~/tools/;
