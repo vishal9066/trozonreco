@@ -4,6 +4,7 @@ python3 -m pip install --upgrade pip;
 sudo apt-get install ruby;
 sudo apt-get install screen;
 sudo apt-get install git;
+apt-get install gem;
 mkdir ~/Tools;
 mkdir ~/wordlist;
 mkdir ~/tools;
@@ -31,7 +32,9 @@ go get github.com/haccer/subjack;
 wget https://github.com/haccer/subjack/blob/master/fingerprints.json -o ~/tools/fingerprints.json
 GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder;
 GO111MODULE=on go get -u -v github.com/hahwul/dalfox;
-wget https://raw.githubusercontent.com/Mad-robot/recon-tools/master/dicc.txt -o ~/wordlist/dicc.txt;
+wget https://raw.githubusercontent.com/Mad-robot/recon-tools/master/dicc.txt;
+mv dicc.txt ~/wordlist/;
+gem install aquatone;
 
 GO111MODULE=on go get -u -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei
 git clone https://github.com/tillson/git-hound ~/Tools/git-hound; cd /root/Tools/git-hound; go build; mv git-hound /root/go/bin/; cd ~;

@@ -70,9 +70,18 @@ echo -e "${NORMAL}Starting ${GREEN}Sublist3r${NORMAL} on $1..."
 python3 ~/tools/Sublist3r/sublist3r.py -d $1 -o $2-sublister.txt > /dev/null
 sleep 2
 
-echo -e "${BOLD}\nFiltering subdomains of ${RED}$1... \n ${NORMAL} "
-cat $2-sublister.txt $2-assetfinder.txt |grep -v "*" |sort -u > $2-finalsubdomains.txt
+echo -e "${NORMAL}Starting ${GREEN}Subfinder${NORMAL} on $1..."
+subfinder -d $1 -o $2-subfinder.txt
 sleep 2
+
+echo -e "${BOLD}\nFiltering subdomains of ${RED}$1... \n ${NORMAL} "
+cat $2-sublister.txt $2-assetfinder.txt $2-subfinder.txt |grep -v "*" |sort -u > $2-finalsubdomains.txt
+sleep 2
+
+echo -e "Starting ${GREEN}Running Aquatone ${NORMAL} on $1... ${NORMAL} "
+aquatone-discover -d $1 --disable-collectors dictionary
+aquatone-scan -d $1
+aquatone-takeover -d $1
 
 echo -e "${NORMAL}Starting ${GREEN}Httprobe${NORMAL} on all filtered subdomains..."
 cat $2-finalsubdomains.txt | sort -u | uniq -u | httprobe > $2-alive.txt
@@ -140,9 +149,11 @@ echo -e "Starting ${GREEN}Broken Link Checker ${NORMAL} on $1... ${NORMAL} "
 sleep 2
 blc -rof --filter-level 3 https://$1/ | tee $2-brokenlinks.txt
 
-echo -e "Starting ${GREEN}Running Dalfox ${NORMAL} on $1... ${NORMAL} "
+/*echo -e "Starting ${GREEN}Running Dalfox ${NORMAL} on $1... ${NORMAL} "
 sleep 2
-cat $2-xss.txt | dalfox pipe | tee $2-dalfox.txt
+cat $2-xss.txt | dalfox pipe | tee $2-dalfox.txt 
+*/
+
 
 sleep 2
 echo -e "${BOLD}\nAll your outputs are save in ${GREEN}$2/ \n"
