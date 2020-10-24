@@ -78,11 +78,6 @@ echo -e "${BOLD}\nFiltering subdomains of ${RED}$1... \n ${NORMAL} "
 cat $2-sublister.txt $2-assetfinder.txt $2-subfinder.txt |grep -v "*" |sort -u > $2-finalsubdomains.txt
 sleep 2
 
-echo -e "Starting ${GREEN}Running Aquatone ${NORMAL} on $1... ${NORMAL} "
-aquatone-discover -d $1 --disable-collectors dictionary
-aquatone-scan -d $1
-aquatone-takeover -d $1
-
 echo -e "${NORMAL}Starting ${GREEN}Httprobe${NORMAL} on all filtered subdomains..."
 cat $2-finalsubdomains.txt | sort -u | uniq -u | httprobe > $2-alive.txt
 sleep 2
@@ -94,6 +89,12 @@ sleep 2
 echo -e "${NORMAL}Starting ${GREEN}subdomain takeover${NORMAL} scan on $1..."
 subjack -w $2-finalsubdomains.txt -t 20 -ssl -c ~/tools/fingerprints.json -o $2-subjack.txt
 subzy -targets $2-finalsubdomains.txt -hide_fails --verify_ssl -concurrency 20 | sort -u > $2-subzy.txt
+sleep 2
+
+echo -e "Starting ${GREEN}Running Aquatone ${NORMAL} on $1... ${NORMAL} "
+aquatone-discover -d $1 --disable-collectors dictionary
+aquatone-scan -d $1
+aquatone-takeover -d $1
 sleep 2
 
 echo -e "${NORMAL}${BOLD}Starting ${GREEN}$3${NORMAL}${BOLD} param output on $1... ${NORMAL} "

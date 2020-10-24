@@ -29,7 +29,8 @@ mv ./potential.json ~/.gf;
 GO111MODULE=on go get -u -v github.com/projectdiscovery/httpx/cmd/httpx;
 go get github.com/ffuf/ffuf;
 go get github.com/haccer/subjack;
-wget https://github.com/haccer/subjack/blob/master/fingerprints.json -o ~/tools/fingerprints.json
+wget https://github.com/haccer/subjack/blob/master/fingerprints.json;
+mv fingerprints.json ~/tools/;
 GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder;
 GO111MODULE=on go get -u -v github.com/hahwul/dalfox;
 wget https://raw.githubusercontent.com/Mad-robot/recon-tools/master/dicc.txt;
