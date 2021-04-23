@@ -13,7 +13,7 @@ Tools used -
     HTTPX
     Waybackurls
 
-Thank you for using the tool.
+Thank you for using this tool.
 
 Installation:-
 1. git clone https://github.com/vishal9066/trozonreco
