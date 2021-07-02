@@ -136,7 +136,9 @@ cat $2-$3.txt | gf sqli > $2-rce.txt
 
 echo -e "Starting ${GREEN}Directory Fuzzing${NORMAL} on $1... ${NORMAL} " | notify
 sleep 2
-cat $2-gettitle.txt | grep 'Not Found\|Moved Permanently\|403 - Forbidden\|404\|403\|Apache\|Service Unavailable\|403\|Demo\|test\|dev\|Welcome\|FTP Root\|Access Denied' | cut -d ' ' -f 1 | while read url;do ffuf -w ~/wordlist/dicc.txt -u $url/FUZZ -mc 200; done | tee $2-Dirfuzz.txt
+cat $2-gettitle.txt | grep 'Not Found\|Moved Permanently\|403 - Forbidden\|404\|403\|Apache\|Service Unavailable\|403\|Demo\|test\|dev\|Welcome\|FTP Root\|Access Denied' | cut -d ' ' -f 1 | tee $2-juicydomains.txt 
+sleep 2
+cat '$2' | while read url;do ffuf -w ~/wordlist/dicc.txt -u $url/FUZZ -recursion -mc 200 \n; done >> $2-Dirfuzz.txt
 cat $2-gettitle.txt | grep 'Not Found\|Moved Permanently\|403 - Forbidden\|404\|403\|Apache\|Service Unavailable\|403\|Demo\|test\|dev\|Welcome\|FTP Root\|Access Denied' | cut -d ' ' -f 1 | while read url;do ~/tools/dirsearch/dirsearch.py dir -u $url/ -e php,log,sql,gz,zip,aspx,docx,pdf,txt,js,json; done | tee $2-Dirsearch.txt
 
 echo -e "Starting ${GREEN}Nuclei ${NORMAL} on $1... ${NORMAL} " | notify
