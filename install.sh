@@ -65,6 +65,6 @@ alias gf=~/go/bin/gf
 alias waybackurls=~/go/bin/waybackurls
 alias gau=~/go/bin/gau
 alias nuclei=~/go/bin/nuclei
-" >> ~/.bash_rc;
+" >> ~/.zshrc;
 
 
