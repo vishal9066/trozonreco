@@ -21,4 +21,4 @@ Installation:-
 3. run ./install.sh
 
 Usage:-
-1. trozonreco target.com waybackurls or gau 
+trozonreco target.com waybackurls or gau 
